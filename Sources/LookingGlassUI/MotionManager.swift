@@ -158,9 +158,10 @@ public class MotionManager: ObservableObject {
                     self.resetPitchRollWorkItem = nil
                 } else if self.resetPitchRollWorkItem == nil {
                     let resetWorkItem = DispatchWorkItem {
-                        self.initialDeviceRotation = motionData.attitude.quaternion.quat
+                        self.initialDeviceRotation = quaternion
                         self.resetPitchRollWorkItem = nil
                         self.quaternion = quaternion
+                        self.animatedQuaternion = quaternion
                     }
                     self.resetPitchRollWorkItem = resetWorkItem
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: resetWorkItem)
