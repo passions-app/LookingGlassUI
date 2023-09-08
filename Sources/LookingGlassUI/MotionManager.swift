@@ -161,16 +161,10 @@ public class MotionManager: ObservableObject {
                         self.initialDeviceRotation = motionData.attitude.quaternion.quat
                         self.resetPitchRollWorkItem = nil
                         self.quaternion = quaternion
-                        withAnimation(Animation.linear(duration: self.updateInterval)) {
-                            self.animatedQuaternion = quaternion
-                        }
                     }
                     self.resetPitchRollWorkItem = resetWorkItem
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: resetWorkItem)
                 }
-
-
-
 
                 self.quaternion = quaternion
                 withAnimation(Animation.linear(duration: self.updateInterval)) {
