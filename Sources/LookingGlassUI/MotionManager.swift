@@ -39,6 +39,9 @@ public class MotionManager: ObservableObject {
     ///
     /// This value is reset whenever motion manager is re-enabled.
     @Published public private(set) var initialDeviceRotation: Quat? = nil
+
+    private var diffDeviceRotation: Quat?
+    private var resetPitchRollWorkItem: DispatchWorkItem?
     
     /// Rotation from initial device rotation to current.
     public var deltaRotation: Quat {
@@ -147,7 +150,28 @@ public class MotionManager: ObservableObject {
                 if self.initialDeviceRotation == nil {
                     self.initialDeviceRotation = quaternion
                 }
-                
+                self.diffDeviceRotation = quaternion
+
+                let shouldReset = abs(self.diffDeviceRotation?.pitch.degrees ?? 0) > 10 || abs(self.diffDeviceRotation?.roll.degrees ?? 0) > 10
+                if !shouldReset {
+                    self.resetPitchRollWorkItem?.cancel()
+                    self.resetPitchRollWorkItem = nil
+                } else if self.resetPitchRollWorkItem == nil {
+                    let resetWorkItem = DispatchWorkItem {
+                        self.initialDeviceRotation = motionData.attitude.quaternion.quat
+                        self.resetPitchRollWorkItem = nil
+                        self.quaternion = quaternion
+                        withAnimation(Animation.linear(duration: self.updateInterval)) {
+                            self.animatedQuaternion = quaternion
+                        }
+                    }
+                    self.resetPitchRollWorkItem = resetWorkItem
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: resetWorkItem)
+                }
+
+
+
+
                 self.quaternion = quaternion
                 withAnimation(Animation.linear(duration: self.updateInterval)) {
                     self.animatedQuaternion = quaternion
